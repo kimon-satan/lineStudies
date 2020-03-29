@@ -2,10 +2,6 @@
 
 //Better parametrical control of noise
 
-//TODO
-// - Encapsulate control points functions into control surface class (perhaps for further development)
-// - Try to make a linear sequence for noise line
-// - Try additive synthesis
 
 NoiseLine noiseLine;
 ArrayList<ControlPoint> controlPoints;
