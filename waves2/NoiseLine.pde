@@ -2,34 +2,37 @@ class NoiseLine
 {
   
   float theta; 
-  int mag; 
-  float noiseStep; 
-  float noiseAmp;
-  float noiseInc;
-  float counter;
-  float directionalCounter;
+  int mag;
   
-  NoiseLine(float _theta, int _mag, float _noiseStep, float _noiseInc, float _noiseAmp)
+  PVector sampleVector;  
+  PVector sampleCenter; 
+  PVector sampleOffset; 
+  PVector sampleInc; //move the noise by this vector
+  
+  float noiseAmp;
+  
+  NoiseLine(float _theta, int _mag)
   {
     theta = _theta;
     mag = _mag;
-    noiseStep = _noiseStep;
-    noiseInc = _noiseInc;
-    noiseAmp = _noiseAmp;
-    counter = 0;
-    directionalCounter = 0;
+    
+    sampleCenter = new PVector(random(0,99999), random(0,99999)); //start in a random position
+    sampleVector = new PVector(10,0);
+    sampleOffset = PVector.div(sampleVector, -2); // to draw the sample from the center
+    sampleInc = new PVector(0.01,0);
+    noiseAmp = 50;
+   
   }
   
   void update()
   {
-     counter += noiseInc;
-     directionalCounter += 0.1;
+     sampleCenter.add(sampleInc);
   }
   
   PVector calcVertex(float progress)
   {
-
     
+    //just the line
     
     PVector p = new PVector(
       sin(theta) * progress * mag,
@@ -43,19 +46,62 @@ class NoiseLine
   
     p.add(offset);
     
-    PVector n = new PVector(cos(theta),-sin(theta));
-    float noiseVal = noise(
-    -noiseStep/2 + progress * noiseStep/2 + counter + directionalCounter, 
-    -noiseStep/2 + progress * noiseStep/2 - counter
+    //adding the noise
+    
+    PVector normal = new PVector(cos(theta),-sin(theta));
+    
+    PVector np  = PVector.mult(sampleVector, progress);
+    np.add(sampleOffset); //set from the center
+    
+     float noiseVal = noise(
+      sampleCenter.x + np.x, 
+      sampleCenter.y + np.y
     );
     
     float mul = map(noiseVal,0.0,1.0,-noiseAmp, noiseAmp);
     
-    n.normalize();
-    n.mult(mul);
-    p.add(n);
+    normal.normalize();
+    normal.mult(mul);
+    p.add(normal);
   
     return p;
   }
+  
+  void setSampleTheta(float theta)
+  {
+    float mag = sampleVector.mag();
+    sampleVector.x = sin(theta);
+    sampleVector.y = cos(theta);
+    setSampleMagnitude(mag);
+  }
+  
+  void setSampleMagnitude(float mag)
+  {
+    //println(mag);
+    if(mag > 0)
+    {
+     sampleVector.setMag(mag);
+     sampleOffset = PVector.div(sampleVector, -2); // to draw the sample from the center
+    }
+  }
+  
+  void setSampleIncTheta(float theta)
+  {
+    //println(theta);
+    float mag = sampleInc.mag();
+    sampleInc.x = sin(theta);
+    sampleInc.y = cos(theta);
+    sampleInc.setMag(mag);
+  }
+  
+  void setSampleIncMagnitude(float mag)
+  {
+    if(mag > 0)
+    {
+      sampleInc.setMag(mag);
+    }
+  }
+  
+
   
 }
